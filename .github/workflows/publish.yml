@@ -1,4 +1,4 @@
-name: publish
+name: Publish to npm
 
 on:
   push:
@@ -6,27 +6,38 @@ on:
       - main
 
 jobs:
-  publish:
+  test-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.x
-          cache: npm
+          node-version: 20
           registry-url: https://registry.npmjs.org/
+
       - run: npm ci
       - run: npm test
       - run: npm pack
-      - name: Publish if version is new
+
+      - name: Check npm version
+        id: version_check
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           LOCAL_VERSION=$(node -p "require('./package.json').version")
-          REMOTE_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || true)
+          REMOTE_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "")
           if [ "$LOCAL_VERSION" = "$REMOTE_VERSION" ]; then
-            echo "Version $LOCAL_VERSION already published."
-            exit 0
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Version $LOCAL_VERSION already published. Skipping."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
-          npm publish --access public
+
+      - run: npm publish --access public
+        if: steps.version_check.outputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

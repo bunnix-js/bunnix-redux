@@ -1,22 +1,56 @@
-name: validate-pr-description
+name: Validate PR/Issue Description
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, edited, reopened, synchronize]
+  issues:
+    types: [opened, edited]
 
 jobs:
   validate:
+    name: Validate Title and Description
     runs-on: ubuntu-latest
     steps:
-      - name: Validate PR title and body length
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const title = context.payload.pull_request.title || '';
-            const body = context.payload.pull_request.body || '';
-            if (title.trim().length < 5) {
-              core.setFailed('PR title must be at least 5 characters long.');
-            }
-            if (body.trim().length < 20) {
-              core.setFailed('PR body must be at least 20 characters long.');
-            }
+      - name: Validate Pull Request
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+
+          if [ -z "$PR_TITLE" ] || [ ${#PR_TITLE} -lt 5 ]; then
+            echo "❌ PR title is required and must be at least 5 characters"
+            echo "Current title length: ${#PR_TITLE}"
+            exit 1
+          fi
+
+          if [ -z "$PR_BODY" ] || [ ${#PR_BODY} -lt 20 ]; then
+            echo "❌ PR description is required and must be at least 20 characters"
+            echo "Current description length: ${#PR_BODY} characters"
+            exit 1
+          fi
+
+          echo "✅ PR validation passed!"
+          echo "   Title: $PR_TITLE"
+          echo "   Description length: ${#PR_BODY} characters"
+
+      - name: Validate Issue
+        if: github.event_name == 'issues'
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          if [ -z "$ISSUE_TITLE" ] || [ ${#ISSUE_TITLE} -lt 5 ]; then
+            echo "❌ Issue title is required and must be at least 5 characters"
+            echo "Current title length: ${#ISSUE_TITLE}"
+            exit 1
+          fi
+
+          if [ -z "$ISSUE_BODY" ] || [ ${#ISSUE_BODY} -lt 20 ]; then
+            echo "❌ Issue description is required and must be at least 20 characters"
+            echo "Current description length: ${#ISSUE_BODY} characters"
+            exit 1
+          fi
+
+          echo "✅ Issue validation passed!"
+          echo "   Title: $ISSUE_TITLE"
+          echo "   Description length: ${#ISSUE_BODY} characters"
