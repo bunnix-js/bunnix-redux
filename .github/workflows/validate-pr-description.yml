@@ -1,0 +1,22 @@
+name: validate-pr-description
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title and body length
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title || '';
+            const body = context.payload.pull_request.body || '';
+            if (title.trim().length < 5) {
+              core.setFailed('PR title must be at least 5 characters long.');
+            }
+            if (body.trim().length < 20) {
+              core.setFailed('PR body must be at least 20 characters long.');
+            }
