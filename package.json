@@ -21,9 +21,12 @@
     "@types"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test --import ./tests/setup.mjs"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@bunnix/core": "0.9.0",
+    "jsdom": "24.1.1"
+  },
   "peerDependencies": {
     "@bunnix/core": "0.9.0"
   }
