@@ -34,7 +34,14 @@ export function applyMiddleware(...middlewares) {
       const run = () => {
         const mw = middlewares[i++];
         if (!mw) return;
-        return mw(event, args, nextState, run);
+        if (mw.length >= 4) {
+          return mw(event, args, nextState, run);
+        }
+        const result = mw(event, args, nextState);
+        if (result && typeof result.then === 'function') {
+          return result.then(run);
+        }
+        return run();
       };
       return run();
     }
