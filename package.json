@@ -1,6 +1,6 @@
 {
   "name": "@bunnix/redux",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Global state management framework built for Bunnix",
   "license": "ISC",
   "author": "@bunnix",
@@ -23,11 +23,11 @@
   "scripts": {
     "test": "node --test --import ./tests/setup.mjs"
   },
+  "peerDependencies": {
+    "@bunnix/core": "0.9.1"
+  },
   "devDependencies": {
     "@bunnix/core": "0.9.0",
     "jsdom": "24.1.1"
-  },
-  "peerDependencies": {
-    "@bunnix/core": "0.9.0"
   }
 }
